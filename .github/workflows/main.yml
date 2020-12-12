@@ -35,7 +35,7 @@ jobs:
       - name: build zip file
         uses: montudor/action-zip@v0.1.0
         with:
-          args: zip -r function.zip ./ -x ".*"
+          args: zip -r function.zip ./ -x ".*" -x "steps/*" -x "utils/__pycache__/*"
       
       - name: deploy
         uses: appleboy/lambda-action@master

@@ -41,13 +41,14 @@ def lambda_handler(event, context):  # pylint: disable=unused-argument
             'Name': 'Send Notification',
             'ActionOnFailure': 'CANCEL_AND_WAIT',
             'HadoopJarStep': {
-                'Jar': 'script-runner.jar',
+                'Jar': 's3://ap-southeast-1.elasticmapreduce/libs/script-runner/script-runner.jar',
                 'Args': [
-                    'bash',
-                    '-c',
-                    app_settings.APP_PATH,
-                    app_settings.APP_INPUT,
-                    app_settings.APP_OUTPUT
+                    app_settings.SNS_SCRIPT_PATH,
+                    app_settings.SNS_TOPIC_ARN,
+                    payload['messageSubject'] if 'messageSubject' in payload \
+                            else app_settings.SNS_MSG_SUBJECT,
+                    payload['messageBody'] if 'messageBody' in payload \
+                            else app_settings.SNS_MSG_BODY
                 ]
             }
         }]
@@ -120,7 +121,7 @@ def lambda_handler(event, context):  # pylint: disable=unused-argument
         print(err.response['Error']['Message'])
         return err.response['Error']['Message']
 
-# if __name__ == "__main__":
-#     lambda_handler({
-#         "body": '{"clusterName": "Hey This is a demo cluster", "coreInsType": "m5.xlarge", "coreInsCount": 2}'
-#     }, '')
+if __name__ == "__main__":
+    lambda_handler({
+        "body": '{"clusterName": "Hey This is a demo cluster", "coreInsType": "m5a.xlarge", "coreInsCount": 1}'
+    }, '')

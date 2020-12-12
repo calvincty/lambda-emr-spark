@@ -1,5 +1,10 @@
 import os
 
+SNS_SCRIPT_PATH = os.environ['SNS_SCRIPT_PATH']
+SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']
+SNS_MSG_SUBJECT = os.environ['SNS_MSG_SUBJECT']
+SNS_MSG_BODY = os.environ['SNS_MSG_BODY']
+MERCHANT = os.environ['MERCHANT']
 APP_PATH = os.environ['APP_PATH'] 
 APP_INPUT = os.environ['APP_INPUT'] 
 APP_OUTPUT = os.environ['APP_OUTPUT'] 

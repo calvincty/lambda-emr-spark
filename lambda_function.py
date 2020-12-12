@@ -120,8 +120,3 @@ def lambda_handler(event, context):  # pylint: disable=unused-argument
     except ClientError as err:
         print(err.response['Error']['Message'])
         return err.response['Error']['Message']
-
-if __name__ == "__main__":
-    lambda_handler({
-        "body": '{"clusterName": "Hey This is a demo cluster", "coreInsType": "m5a.xlarge", "coreInsCount": 1}'
-    }, '')

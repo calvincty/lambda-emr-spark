@@ -1,16 +1,21 @@
 """Lambda function to spin up EMR cluster."""
 
 import os
+import json
 import boto3
 from botocore.exceptions import ClientError
 from utils import app_settings
 
-def lambda_handler(event, context): #pylint: disable=unused-argument
+
+def lambda_handler(event, context):  # pylint: disable=unused-argument
     """Spin up EMR Cluster."""
     try:
         client = boto3.client(
             'emr', region_name=os.environ['AWS_DEFAULT_REGION'])
         client = boto3.client('emr')
+
+        # API post body
+        payload = json.loads(event['body'])
 
         steps = [{
             'Name': 'Setup Debugging',
@@ -32,11 +37,24 @@ def lambda_handler(event, context): #pylint: disable=unused-argument
                     app_settings.APP_OUTPUT
                 ]
             }
+        }, {
+            'Name': 'Send Notification',
+            'ActionOnFailure': 'CANCEL_AND_WAIT',
+            'HadoopJarStep': {
+                'Jar': 'script-runner.jar',
+                'Args': [
+                    'bash',
+                    '-c',
+                    app_settings.APP_PATH,
+                    app_settings.APP_INPUT,
+                    app_settings.APP_OUTPUT
+                ]
+            }
         }]
         bootstrap_actions = []
 
-        emr_resp =  client.run_job_flow(
-            Name=app_settings.EMR_CLUSTER_NAME,
+        emr_resp = client.run_job_flow(
+            Name=payload['clusterName'] if 'clusterName' in payload else app_settings.EMR_CLUSTER_NAME,
             LogUri=app_settings.APP_LOG_URI,
             ReleaseLabel=app_settings.EMR_RELEASE_LABEL,
             ServiceRole='EMR_DefaultRole',
@@ -72,8 +90,8 @@ def lambda_handler(event, context): #pylint: disable=unused-argument
                     {
                         'Name': 'Core',
                         'InstanceRole': 'CORE',
-                        'InstanceType': app_settings.CORE_INS_TYPE,
-                        'InstanceCount': int(app_settings.CORE_INS_COUNT),
+                        'InstanceType': payload['coreInsType'] if 'coreInsType' in payload else app_settings.CORE_INS_TYPE,
+                        'InstanceCount': int(payload['coreInsCount']) if 'coreInsCount' in payload else int(app_settings.CORE_INS_COUNT),
                         'Market': 'SPOT',
                         'EbsConfiguration': {
                             'EbsBlockDeviceConfigs': [
@@ -91,16 +109,18 @@ def lambda_handler(event, context): #pylint: disable=unused-argument
             },  # Instances
             BootstrapActions=bootstrap_actions,
             Applications=[{x.split('=')[0]: x.split('=')[1]}
-                        for x in app_settings.EMR_APPS.split(' ')],
+                          for x in app_settings.EMR_APPS.split(' ')],
             Tags=[{'Key': x.split('=')[0], 'Value': x.split('=')[1]}
-                for x in app_settings.EMR_TAGS.split(',')],
+                  for x in app_settings.EMR_TAGS.split(',')],
             Steps=steps
         )
+        print(emr_resp)
+        return emr_resp
     except ClientError as err:
         print(err.response['Error']['Message'])
+        return err.response['Error']['Message']
 
-    return emr_resp
-
-
-if __name__ == "__main__":
-    lambda_handler({}, '')
+# if __name__ == "__main__":
+#     lambda_handler({
+#         "body": '{"clusterName": "Hey This is a demo cluster", "coreInsType": "m5.xlarge", "coreInsCount": 2}'
+#     }, '')

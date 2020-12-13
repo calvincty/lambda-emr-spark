@@ -1,11 +1,17 @@
 # Overview #
 
-A lambda function (trigger by API Gateway HTTP API endpoint) to spin up a EMR cluster to run a spark job and publish a message to SNS through bash script as notification on job completed.
+A lambda function (triggered by API Gateway) to spin up a EMR cluster and publish messages to SNS on EMR job completed.
 
-![API Gateway HTTP API POST](./screenshots/api-post-request.png)
+![Overview](./screenshots/overview.jpeg)
 
 
 ---
+
+
+## API Request ##
+HTTP POST request with JSON body to override EMR cluster parameters
+
+![API Gateway HTTP API POST](./screenshots/api-post-request.png)
 
 ## Configurations ##
 The EMR cluster configuration parameters are located at `utils/app_settings.py` (using environment variables in the Lambda function). Some of the parameteres could be override by the API payloads
@@ -43,7 +49,7 @@ The scripts located at `steps/` would be uploaded to the S3 before deploy to the
 
 ## Github Action Workflow ##
 * Upload spark and bash scripts to S3
-* Deploy to AWS Lambda function on `main` branch commit pushed/merged
+* Deploy to AWS Lambda function on `main` branch commit pushed or pull-request merged
 
 ![EMR Cluster](./screenshots/github-action-workflow.png)
 

@@ -26,7 +26,7 @@ def lambda_handler(event, context):  # pylint: disable=unused-argument
             }
         }, {
             'Name': 'CSV to Parquet conversion',
-            'ActionOnFailure': 'CANCEL_AND_WAIT',
+            'ActionOnFailure': 'TERMINATE_CLUSTER',
             'HadoopJarStep': {
                 'Jar': 'command-runner.jar',
                 'Args': [
@@ -39,7 +39,7 @@ def lambda_handler(event, context):  # pylint: disable=unused-argument
             }
         }, {
             'Name': 'Send Notification',
-            'ActionOnFailure': 'CANCEL_AND_WAIT',
+            'ActionOnFailure': 'TERMINATE_CLUSTER',
             'HadoopJarStep': {
                 'Jar': 's3://ap-southeast-1.elasticmapreduce/libs/script-runner/script-runner.jar',
                 'Args': [
